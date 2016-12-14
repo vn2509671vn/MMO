@@ -16,6 +16,7 @@ $route['tranfer-history'] = 'site/lichsu/index';
 $route['change-password'] = 'site/doimatkhau/index';
 $route['income-info'] = 'site/thongtinthunhap/index';
 $route['history-info'] = 'site/thongtinthunhap/get_history';
+$route['create-account'] = 'site/taotaikhoan/index';
 $route['captcha'] = 'site/dangky/create_captcha';
 
 

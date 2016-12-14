@@ -149,18 +149,60 @@ class Kichhoat extends Admin {
 	private function nhaybac()
 	{
 		$this->load->model('Thongtinbac_model');
-		$list_bacnguoidung = $this->Thongtinbac_model->get_list_bacnguoidung();
-		for ($i=0; $i < count($list_bacnguoidung); $i++) { 
-			$user_check = $list_bacnguoidung[$i];
-			for ($j=0; $j < count($list_bacnguoidung); $j++) { 
-				$user = $list_bacnguoidung[$j];
-				if($user['iduser'] != $user_check['iduser'])
+		
+		$continue = false;
+		
+		// Nhay cung level 1
+		$list_level1 = $this->Thongtinbac_model->get_list_levelasc(1);
+		for ($i=0; $i < count($list_level1); $i++) {
+			if ($this->dequy_nhaybac($list_level1[$i]['iduser'], 1))
+			{
+				$continue = true;
+				break;
+			}
+		}
+		
+		if ($continue)
+		{
+			$continue = false;
+			// Nhay cung level 2
+			$list_level2 = $this->Thongtinbac_model->get_list_levelasc(2);
+			for ($i=0; $i < count($list_level2); $i++) {
+				if ($this->dequy_nhaybac($list_level2[$i]['iduser'], 2))
 				{
-					$this->dequy_nhaybac($user_check['iduser'], $user_check['levelhientai']);
+					$continue = true;
 					break;
 				}
 			}
 		}
+		
+		if ($continue)
+		{
+			$continue = false;
+			// Nhay cung level 3
+			$list_level3 = $this->Thongtinbac_model->get_list_levelasc(3);
+			for ($i=0; $i < count($list_level3); $i++) {
+				if ($this->dequy_nhaybac($list_level3[$i]['iduser'], 3))
+				{
+					$continue = true;
+					break;
+				}
+			}
+		}
+		
+		// if ($continue)
+		// {
+		// 	$continue = false;
+		// 	// Nhay cung level 0
+		// 	$list_level0 = $this->Thongtinbac_model->get_list_levelasc(0);
+		// 	for ($i=0; $i < count($list_level0); $i++) {
+		// 		if ($this->dequy_nhaybac($list_level0[$i]['iduser'], 0))
+		// 		{
+		// 			$continue = true;
+		// 			break;
+		// 		}
+		// 	}
+		// }
 	}
 
 	private function congthemtien($iduser, $sotiencong)
@@ -184,6 +226,7 @@ class Kichhoat extends Admin {
 		$this->load->model('Thongtinbac_model');
 		$this->load->model('Thongtinuser_model');
 		switch ($level) {
+			
 			case '1':
 			{
 				$check = $this->Thongtinbac_model->count_level_1($iduser);
@@ -249,6 +292,8 @@ class Kichhoat extends Admin {
 					//--
 					}
 					//--
+					
+					return true;
 				}
 				break;
 			}
@@ -319,6 +364,8 @@ class Kichhoat extends Admin {
 					//--
 					}
 					//--
+					
+					return true;
 				}
 				break;
 			}
@@ -378,11 +425,14 @@ class Kichhoat extends Admin {
 							if(!empty($info_user_check))
 							{
 								$check_ngt = $this->Thongtinuser_model->get_thongtin($info_user_check['nguoigioithieu']);
-								$sotienhienco = $this->Thongtinbac_model->get_sotienhienco($check_ngt['iduser']);
-								$params = array(
-									'sotienhienco' => ($sotienhienco + 60),
-								);
-								$this->Thongtinbac_model->update_bacnhay($check_ngt['iduser'], $params);
+								if (!empty($check_ngt['iduser']))
+								{
+									$sotienhienco = $this->Thongtinbac_model->get_sotienhienco($check_ngt['iduser']);
+									$params = array(
+										'sotienhienco' => ($sotienhienco + 60),
+									);
+									$this->Thongtinbac_model->update_bacnhay($check_ngt['iduser'], $params);
+								}
 							}
 							
 							//++Duy add inform level up -> mail to user
@@ -426,12 +476,16 @@ class Kichhoat extends Admin {
 								$mail = $this->Thongtinuser_model->send_mail($recipient_email,$subject,$body);
 								//--
 							}
+							
+							return true;
 						}
-						//--
-						else
+					}
+					//--
+					else
+					{
+						if ($info_user_check['trangthaikhoa'] == 0)
 						{
 							//++Duy add inform Level 3 have child = 0 -> mail to admin
-							
 							$time = new DateTime();
 					        $datetime = $time->modify('+1 day');
 					        $datetime = $datetime->format('Y-m-d H:i:s');
@@ -453,5 +507,7 @@ class Kichhoat extends Admin {
 				break;
 			}
 		}
+		
+		return false;
 	}
 }

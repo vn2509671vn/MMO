@@ -141,14 +141,42 @@ class Lockaccount extends Admin {
 	private function nhaybac()
 	{
 		$this->load->model('Thongtinbac_model');
-		$list_bacnguoidung = $this->Thongtinbac_model->get_list_bacnguoidung();
-		for ($i=0; $i < count($list_bacnguoidung); $i++) { 
-			$user_check = $list_bacnguoidung[$i];
-			for ($j=0; $j < count($list_bacnguoidung); $j++) { 
-				$user = $list_bacnguoidung[$j];
-				if($user['iduser'] != $user_check['iduser'])
+		
+		$continue = false;
+		
+		// Nhay cung level 1
+		$list_level1 = $this->Thongtinbac_model->get_list_levelasc(1);
+		for ($i=0; $i < count($list_level1); $i++) {
+			if ($this->dequy_nhaybac($list_level1[$i]['iduser'], 1))
+			{
+				$continue = true;
+				break;
+			}
+		}
+		
+		if ($continue)
+		{
+			$continue = false;
+			// Nhay cung level 2
+			$list_level2 = $this->Thongtinbac_model->get_list_levelasc(2);
+			for ($i=0; $i < count($list_level2); $i++) {
+				if ($this->dequy_nhaybac($list_level2[$i]['iduser'], 2))
 				{
-					$this->dequy_nhaybac($user_check['iduser'], $user_check['levelhientai']);
+					$continue = true;
+					break;
+				}
+			}
+		}
+		
+		if ($continue)
+		{
+			$continue = false;
+			// Nhay cung level 3
+			$list_level3 = $this->Thongtinbac_model->get_list_levelasc(3);
+			for ($i=0; $i < count($list_level3); $i++) {
+				if ($this->dequy_nhaybac($list_level3[$i]['iduser'], 3))
+				{
+					$continue = true;
 					break;
 				}
 			}
@@ -323,98 +351,101 @@ class Lockaccount extends Admin {
 				
 				if($check)
 				{
-					if ($check_conf1 >= 1 && $info_user_check['trangthaikhoa'] == 0)
+					if ($check_conf1 >= 1)
 					{
-						$sotienhienco = $this->Thongtinbac_model->get_sotienhienco($iduser);
-						$update_bacnhay = $this->Thongtinbac_model->get_thongtinbac($iduser);
-						$lamlai = $this->Thongtinbac_model->get_lamlai($iduser);
-						$bacnhay = array(
-							'sotienhienco' => ($sotienhienco + 300),
-							'lamlai' => ($lamlai + 1)
-						);
-						$this->Thongtinbac_model->update_bacnhay($iduser, $bacnhay);
-						$list_update = $this->Thongtinbac_model->get_list_level_3($iduser);
-							foreach ($list_update as $user_update) {
-								$bacnguoidung_update = array(
-								'isuser' => 1,
-							);
-							$this->Thongtinbac_model->update_bacnguoidung($user_update['iduser'], $bacnguoidung_update);
-						}
-						$check_conf1_update = $check_conf1 - 1;
-						$this->Thongtinbac_model->update_bacnguoidung_level_0($iduser);
-						$bacnguoidung = array(
-							'levelhientai' => 0,
-							'ngaynhay' => date('Y-m-d H:i:s'),
-							'isuser' => 0,
-							'soconf1' => $check_conf1_update,
-						);
-						$this->Thongtinbac_model->update_bacnguoidung($iduser, $bacnguoidung);
-						$thongtin_thunhap = array(
-							'iduser' => $iduser,
-							'mota'	=> 'Level 3 > Level 4',
-							'ngay' => date('Y-m-d H:i:s'),
-							'thunhap' => 600
-						);
-						$this->Thongtintien_model->add_thongtinthunhap($thongtin_thunhap);
-						
-						$thongtin_thunhap = array(
-							'iduser' => $iduser,
-							'mota'	=> 'Level 4 > Level 0',
-							'ngay' => date('Y-m-d H:i:s'),
-							'thunhap' => (-300),
-						);
-						$this->Thongtintien_model->add_thongtinthunhap($thongtin_thunhap);
-						
-						if(!empty($info_user_check))
+						if ($info_user_check['trangthaikhoa'] == 0)
 						{
-							$check_ngt = $this->Thongtinuser_model->get_thongtin($info_user_check['nguoigioithieu']);
-							$sotienhienco = $this->Thongtinbac_model->get_sotienhienco($check_ngt['iduser']);
-							$params = array(
-								'sotienhienco' => ($sotienhienco + 60),
+							$sotienhienco = $this->Thongtinbac_model->get_sotienhienco($iduser);
+							$update_bacnhay = $this->Thongtinbac_model->get_thongtinbac($iduser);
+							$lamlai = $this->Thongtinbac_model->get_lamlai($iduser);
+							$bacnhay = array(
+								'sotienhienco' => ($sotienhienco + 300),
+								'lamlai' => ($lamlai + 1)
 							);
-							$this->Thongtinbac_model->update_bacnhay($check_ngt['iduser'], $params);
-						}
-						
-						//++Duy add inform level up -> mail to user
-						$recipient_email = $info_user_check['email'];
-						$subject = "[Snowballworld] Account level up";
-						$htmlStr = "<a href='https://snowballworld.net' target='_blank'>Snowball World.</a><br />";
-						$body = 'You have just received 600$ from level up : Level 3 > Level 4.
-						<br />Check your cash in '.$htmlStr;
-						$mail = $this->Thongtinuser_model->send_mail($recipient_email,$subject,$body);
-						//--
-						
-						//++Duy add inform level up -> mail to user
-						$recipient_email = $info_user_check['email'];
-						$subject = "[Snowballworld] Account reset";
-						$htmlStr = "<a href='https://snowballworld.net' target='_blank'>Snowball World.</a><br />";
-						$body = 'You have just lost 300$ from reset level.
-						<br />Check your cash in '.$htmlStr;
-						$mail = $this->Thongtinuser_model->send_mail($recipient_email,$subject,$body);
-						//--
-	
-						//++Duy add : Insert Hoa hong level 3 to History Info
-						$info_user_level_3 = $this->Thongtinuser_model->get_thongtin($iduser);
-						$nguoigioithieu_level3 =  $this->Thongtinuser_model->get_thongtin($info_user_level_3['nguoigioithieu']);
-						if(!empty($nguoigioithieu_level3) && $nguoigioithieu_level3['trangthaikhoa'] == 0)
-						{
-							$hoahong_level3 = array(
-									'iduser' => $nguoigioithieu_level3['iduser'],
-									'sotiennhan' => 60,
-									'ngaynhan' => date('Y-m-d H:i:s'),
-									'nguoidangky' => $info_user_level_3['hoten'].' Level 3 > Level 4',
+							$this->Thongtinbac_model->update_bacnhay($iduser, $bacnhay);
+							$list_update = $this->Thongtinbac_model->get_list_level_3($iduser);
+								foreach ($list_update as $user_update) {
+									$bacnguoidung_update = array(
+									'isuser' => 1,
 								);
-							$this->Thongtinbac_model->add_hoahong($hoahong_level3);
-							$this->congthemtien($iduser, 60);
+								$this->Thongtinbac_model->update_bacnguoidung($user_update['iduser'], $bacnguoidung_update);
+							}
+							$check_conf1_update = $check_conf1 - 1;
+							$this->Thongtinbac_model->update_bacnguoidung_level_0($iduser);
+							$bacnguoidung = array(
+								'levelhientai' => 0,
+								'ngaynhay' => date('Y-m-d H:i:s'),
+								'isuser' => 0,
+								'soconf1' => $check_conf1_update,
+							);
+							$this->Thongtinbac_model->update_bacnguoidung($iduser, $bacnguoidung);
+							$thongtin_thunhap = array(
+								'iduser' => $iduser,
+								'mota'	=> 'Level 3 > Level 4',
+								'ngay' => date('Y-m-d H:i:s'),
+								'thunhap' => 600
+							);
+							$this->Thongtintien_model->add_thongtinthunhap($thongtin_thunhap);
 							
-							//++Duy add inform children account level up -> mail to user
-							$recipient_email = $nguoigioithieu_level3['email'];
-							$subject = "[Snowballworld] Children's account level up";
+							$thongtin_thunhap = array(
+								'iduser' => $iduser,
+								'mota'	=> 'Level 4 > Level 0',
+								'ngay' => date('Y-m-d H:i:s'),
+								'thunhap' => (-300),
+							);
+							$this->Thongtintien_model->add_thongtinthunhap($thongtin_thunhap);
+							
+							if(!empty($info_user_check))
+							{
+								$check_ngt = $this->Thongtinuser_model->get_thongtin($info_user_check['nguoigioithieu']);
+								$sotienhienco = $this->Thongtinbac_model->get_sotienhienco($check_ngt['iduser']);
+								$params = array(
+									'sotienhienco' => ($sotienhienco + 60),
+								);
+								$this->Thongtinbac_model->update_bacnhay($check_ngt['iduser'], $params);
+							}
+							
+							//++Duy add inform level up -> mail to user
+							$recipient_email = $info_user_check['email'];
+							$subject = "[Snowballworld] Account level up";
 							$htmlStr = "<a href='https://snowballworld.net' target='_blank'>Snowball World.</a><br />";
-							$body = 'You have just received 60$ from '.$info_user_level_3['hoten'].' : Level 3 > Level 4.
+							$body = 'You have just received 600$ from level up : Level 3 > Level 4.
 							<br />Check your cash in '.$htmlStr;
 							$mail = $this->Thongtinuser_model->send_mail($recipient_email,$subject,$body);
 							//--
+							
+							//++Duy add inform level up -> mail to user
+							$recipient_email = $info_user_check['email'];
+							$subject = "[Snowballworld] Account reset";
+							$htmlStr = "<a href='https://snowballworld.net' target='_blank'>Snowball World.</a><br />";
+							$body = 'You have just lost 300$ from reset level.
+							<br />Check your cash in '.$htmlStr;
+							$mail = $this->Thongtinuser_model->send_mail($recipient_email,$subject,$body);
+							//--
+		
+							//++Duy add : Insert Hoa hong level 3 to History Info
+							$info_user_level_3 = $this->Thongtinuser_model->get_thongtin($iduser);
+							$nguoigioithieu_level3 =  $this->Thongtinuser_model->get_thongtin($info_user_level_3['nguoigioithieu']);
+							if(!empty($nguoigioithieu_level3) && $nguoigioithieu_level3['trangthaikhoa'] == 0)
+							{
+								$hoahong_level3 = array(
+										'iduser' => $nguoigioithieu_level3['iduser'],
+										'sotiennhan' => 60,
+										'ngaynhan' => date('Y-m-d H:i:s'),
+										'nguoidangky' => $info_user_level_3['hoten'].' Level 3 > Level 4',
+									);
+								$this->Thongtinbac_model->add_hoahong($hoahong_level3);
+								$this->congthemtien($iduser, 60);
+								
+								//++Duy add inform children account level up -> mail to user
+								$recipient_email = $nguoigioithieu_level3['email'];
+								$subject = "[Snowballworld] Children's account level up";
+								$htmlStr = "<a href='https://snowballworld.net' target='_blank'>Snowball World.</a><br />";
+								$body = 'You have just received 60$ from '.$info_user_level_3['hoten'].' : Level 3 > Level 4.
+								<br />Check your cash in '.$htmlStr;
+								$mail = $this->Thongtinuser_model->send_mail($recipient_email,$subject,$body);
+								//--
+							}
 						}
 					}
 					//--

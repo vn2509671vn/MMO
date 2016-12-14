@@ -24,12 +24,16 @@ defined('BASEPATH') OR exit('No direct script access allowed');
     <div id="wrapper">
         <div id="sidebar-wrapper">
             <ul class="sidebar-nav">
-                <li><a href="<?php echo (($check == 0) ? '#' : home_url('infomation')); ?>" >Information</a></li>
-                <li><a href="<?php echo (($check == 0) ? '#' : home_url('with-draw-cash')); ?>">Withdraw Cash</a></li>
-                <li><a href="<?php echo (($check == 0) ? '#' : home_url('tranfer-history')); ?>">Tranfer History</a></li>
-                 <li><a href="<?php echo (($check == 0) ? '#' : home_url('income-info')); ?>">Income information</a></li>
-                 <li><a href="<?php echo (($check == 0) ? '#' : home_url('history-info')); ?>">Bonus from children</a></li>
-                <li><a href="active-acount">Active Acount</a></li>
+               <ul class="sidebar-nav">
+                <?php if($check != 0) { ?>
+                    <li><a href="<?php echo home_url('infomation'); ?>" >Information</a></li>
+                    <li><a href="<?php echo home_url('with-draw-cash'); ?>">Withdraw Cash</a></li>
+                    <li><a href="<?php echo home_url('tranfer-history'); ?>">Tranfer History</a></li>
+                     <li><a href="<?php echo home_url('income-info'); ?>">Income information</a></li>
+                     <li><a href="<?php echo home_url('history-info'); ?>">Bonus from children</a></li>
+                     <li><a href="<?php echo (($check == 0) ? '#' : home_url('create-account')); ?>">Create account</a></li>
+                <?php } ?>
+                <li><a href="<?php echo home_url('active-acount'); ?>">Active Acount</a></li>
                 <li><a href="<?php echo home_url('change-password'); ?>">Change Password</a></li>
             </ul>
         </div>

@@ -227,4 +227,11 @@ class Thongtinbac_model extends CI_Model
 		return $this->db->get('bacnguoidung')->result_array();
 	}
 
+	function get_list_levelasc($levelhientai)
+	{
+		$this->db->select('iduser');
+		$this->db->where('levelhientai', $levelhientai);
+		$this->db->order_by('ngaynhay', 'asc');
+		return $this->db->get('bacnguoidung')->result_array();
+	}
 }

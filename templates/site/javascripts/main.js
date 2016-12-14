@@ -97,3 +97,12 @@ function ruttien(link, id, link2)
       });
   });
 }
+
+$(function() {
+    //  var pgurl = window.location.href.substr(window.location.href.lastIndexOf("/")+1);
+    var pgurl = window.location.href.substr(window.location.href);
+     $(".sidebar-nav a").each(function(){
+          if($(this).attr("href") == pgurl || $(this).attr("href") == '' )
+          $(this).addClass("active");
+     })
+});

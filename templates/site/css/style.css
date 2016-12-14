@@ -1,6 +1,3 @@
-*{
-	font:normal normal bold 14px/1 "Comic Sans MS",cursive,sans-serif;
-}
 #footer
 {
 	margin-top: 10px;
@@ -15,4 +12,8 @@ body{
     background-position-y: top;
     background-position: center top;
     background-repeat: no-repeat;
+}
+
+.sidebar-nav a.active{
+	background: #376780;
 }
