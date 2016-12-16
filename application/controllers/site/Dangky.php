@@ -50,11 +50,14 @@ class Dangky extends Site {
 			'matkhau' => md5(my_encrypt($this->input->post('password'))),
 		);
 		$this->Thongtinuser_model->add_userlogin($user_login);
-		$nguoigioithieu = $this->Thongtinuser_model->get_nguoigioithieu($this->input->get('code'));
-		if(!empty($nguoigioithieu))
+		if (!empty($this->input->get('code')))
 		{
-			$idnguoigioithieu = array("nguoigioithieu" => $nguoigioithieu);
-			$this->Thongtinuser_model->update_user($id_user,$idnguoigioithieu);
+			$nguoigioithieu = $this->Thongtinuser_model->get_nguoigioithieu($this->input->get('code'));
+			if(!empty($nguoigioithieu))
+			{
+				$idnguoigioithieu = array("nguoigioithieu" => $nguoigioithieu);
+				$this->Thongtinuser_model->update_user($id_user,$idnguoigioithieu);
+			}
 		}
 		$this->session->set_flashdata('mess', 'Register successfully');
 		redirect(home_url());

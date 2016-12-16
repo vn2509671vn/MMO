@@ -102,7 +102,12 @@ class Thongtinbac_model extends CI_Model
 	{
 		$this->db->select('iduser');
 		$this->db->where('levelhientai', '0');
-		return $this->db->get('bacnguoidung')->row()->iduser;
+		$query = $this->db->get('bacnguoidung');
+		$count = count($query->result_array());
+		if ($count > 0)
+		{
+			return $query->row()->iduser;
+		}
 	}
 
 	function get_thongtin($iduser)
